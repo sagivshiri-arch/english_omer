@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0B1F17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Football Club English Manager</title>
+<style>
+  :root{
+    --bg:#0B1F17;
+    --bg-elev:#13301F;
+    --bg-card:#16382A;
+    --pitch:#1E7A4D;
+    --pitch-dark:#175E3C;
+    --line:rgba(242,245,241,0.38);
+    --gold:#D4A537;
+    --gold-light:#F0CB6E;
+    --white:#F2F5F1;
+    --muted:#8FAC9D;
+    --red:#C23B3B;
+    --green:#3FA66B;
+    --radius:14px;
+    --shadow:0 8px 24px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%; margin:0;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:-apple-system,'Segoe UI',Arial,Helvetica,sans-serif;
+    overflow:hidden;
+  }
+  .en{
+    direction:ltr;
+    unicode-bidi:isolate;
+    font-family:'Arial Black','Arial Narrow',Arial,Helvetica,sans-serif;
+    letter-spacing:0.5px;
+  }
+  #app{
+    max-width:480px;
+    height:100vh;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(212,165,55,0.12), transparent 55%),
+      var(--bg);
+  }
+
+  #topbar{
+    display:flex; align-items:center; justify-content:space-between; padding:10px 14px;
+    background:linear-gradient(180deg, var(--bg-elev), rgba(19,48,31,0.4));
+    border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; z-index:5;
+  }
+  .crest{display:flex; align-items:center; gap:8px; min-width:0;}
+  .crest-badge{
+    width:34px; height:34px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 60%, #9c7820 100%);
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.4); flex-shrink:0;
+  }
+  .club-name{font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;}
+  .club-rank{font-size:10px; color:var(--muted); margin-top:1px;}
+  .coins{display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.25); border:1px solid rgba(212,165,55,0.35); border-radius:20px; padding:6px 12px; transition:transform .15s;}
+  .coins.bump{transform:scale(1.12);}
+  .coins-icon{font-size:14px;}
+  .coins-val{font-size:15px; font-weight:800; color:var(--gold-light); font-family:'Arial Black',Arial,sans-serif; min-width:18px; text-align:left; direction:ltr;}
+  .settings-btn{background:none; border:none; color:var(--muted); font-size:16px; padding:4px 6px; cursor:pointer;}
+
+  #screens{flex:1; overflow-y:auto; position:relative; -webkit-overflow-scrolling:touch;}
+  .screen{display:none; padding:16px 16px 24px; animation:fadeIn .25s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  h2.section-title{font-size:13px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin:0 0 10px 2px; font-weight:700;}
+
+  .pitch-wrap{background:linear-gradient(180deg, #0c2417, #081a10); border-radius:18px; padding:14px; box-shadow:var(--shadow), inset 0 0 40px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.05); position:relative; overflow:hidden;}
+  .stadium-banner{text-align:center; margin-bottom:10px;}
+  .division-name{font-size:18px; font-weight:800; color:var(--gold-light);}
+  .division-sub{font-size:11px; color:var(--muted); margin-top:2px;}
+  svg.pitch-svg{display:block; width:100%; height:auto;}
+  .pos-empty circle{fill:rgba(255,255,255,0.05); stroke:var(--line); stroke-dasharray:4 4;}
+  .pos-empty text{fill:var(--muted);}
+  .pos-filled circle{stroke:var(--gold-light); stroke-width:1.5;}
+  .pos-filled text{fill:var(--bg); font-weight:800;}
+
+  .quick-play-btn{width:100%; margin-top:14px; padding:14px; border:none; border-radius:var(--radius); background:linear-gradient(180deg, var(--green), #2c7d50); color:var(--white); font-size:15px; font-weight:800; box-shadow:0 6px 16px rgba(63,166,107,0.3); cursor:pointer;}
+  .quick-play-btn:active{transform:scale(0.98);}
+
+  .stats-row{display:flex; gap:10px; margin-top:14px;}
+  .stat-card{flex:1; background:var(--bg-card); border-radius:12px; padding:10px; text-align:center; border:1px solid rgba(255,255,255,0.05);}
+  .stat-val{font-size:18px; font-weight:800; color:var(--gold-light);}
+  .stat-label{font-size:10px; color:var(--muted); margin-top:2px;}
+
+  .stage-banner{text-align:center; font-size:12px; color:var(--muted); margin-bottom:8px;}
+  .stage-banner b{color:var(--gold-light);}
+  .progress-dots{display:flex; justify-content:center; gap:6px; margin-bottom:14px;}
+  .progress-dots span{width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15);}
+  .progress-dots span.done{background:var(--gold);}
+  .progress-dots span.current{background:var(--white); box-shadow:0 0 0 3px rgba(255,255,255,0.15);}
+
+  .q-card{background:var(--bg-card); border-radius:18px; padding:20px 16px; border:1px solid rgba(255,255,255,0.06); box-shadow:var(--shadow);}
+  .q-type-label{font-size:11px; color:var(--gold-light); text-transform:uppercase; letter-spacing:1px; font-weight:700; margin-bottom:10px; text-align:center;}
+  .q-prompt{font-size:26px; font-weight:800; text-align:center; margin:6px 0 4px; word-break:break-word;}
+  .q-prompt.sentence{font-size:19px; line-height:1.4;}
+  .blank{color:var(--gold-light); border-bottom:3px solid var(--gold-light); padding:0 4px;}
+  .speak-row{display:flex; justify-content:center; margin:10px 0 16px;}
+  .speak-btn{background:rgba(212,165,55,0.15); border:1px solid rgba(212,165,55,0.4); color:var(--gold-light); border-radius:30px; padding:9px 18px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .speak-btn:active{transform:scale(0.96);}
+
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;}
+  .choice-btn{background:var(--bg-elev); border:1.5px solid rgba(255,255,255,0.08); color:var(--white); border-radius:12px; padding:14px 8px; font-size:14px; font-weight:600; cursor:pointer; transition:transform .1s;}
+  .choice-btn:active{transform:scale(0.97);}
+  .choice-btn.correct{background:rgba(63,166,107,0.25); border-color:var(--green); color:#bdf0d2;}
+  .choice-btn.wrong{background:rgba(194,59,59,0.25); border-color:var(--red); color:#f5c2c2;}
+  .choice-btn[disabled]{cursor:default;}
+
+  .feedback-banner{margin-top:16px; text-align:center; border-radius:12px; padding:12px; font-weight:700; font-size:14px; display:none;}
+  .feedback-banner.show{display:block; animation:fadeIn .2s ease;}
+  .feedback-banner.ok{background:rgba(63,166,107,0.18); color:#bdf0d2; border:1px solid rgba(63,166,107,0.4);}
+  .feedback-banner.bad{background:rgba(194,59,59,0.18); color:#f5c2c2; border:1px solid rgba(194,59,59,0.4);}
+  .feedback-sub{font-size:12px; font-weight:400; margin-top:4px; color:var(--muted);}
+  .sentence-translation{margin-top:10px; font-size:13px; font-weight:400; color:var(--white); line-height:1.5;}
+  .sentence-translation b{color:var(--gold-light); font-weight:800;}
+
+  .continue-btn{width:100%; margin-top:14px; padding:13px; border:none; border-radius:var(--radius); background:var(--gold); color:#221a06; font-size:15px; font-weight:800; cursor:pointer;}
+
+  .start-round-wrap{text-align:center; padding:26px 10px;}
+  .start-round-wrap .ball{font-size:46px; margin-bottom:10px;}
+  .start-round-wrap p{color:var(--muted); font-size:13px; margin:8px 0 18px; line-height:1.6; text-align:right;}
+
+  .summary-card{background:var(--bg-card); border-radius:18px; padding:26px 18px; text-align:center; border:1px solid rgba(255,255,255,0.06);}
+  .summary-score{font-size:36px; font-weight:800; color:var(--gold-light);}
+  .summary-coins{font-size:15px; margin-top:10px; color:var(--white);}
+  .summary-breakdown{margin-top:14px; text-align:right; background:rgba(0,0,0,0.18); border-radius:12px; padding:10px 14px;}
+  .summary-breakdown div{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); padding:4px 0;}
+  .summary-breakdown b{color:var(--white);}
+  .summary-actions{display:flex; gap:10px; margin-top:20px;}
+  .summary-actions button{flex:1; padding:13px; border-radius:12px; border:none; font-weight:700; font-size:13px; cursor:pointer;}
+  .btn-secondary{background:var(--bg-elev); color:var(--white); border:1px solid rgba(255,255,255,0.1) !important;}
+  .btn-primary{background:var(--green); color:var(--white);}
+
+  .shop-grid{display:flex; flex-direction:column; gap:10px;}
+  .shop-item{background:var(--bg-card); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,0.06);}
+  .shop-icon{width:42px; height:42px; border-radius:10px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;}
+  .shop-info{flex:1; min-width:0;}
+  .shop-name{font-size:14px; font-weight:700;}
+  .shop-cost{font-size:11px; color:var(--gold-light); margin-top:2px;}
+  .shop-level-dots{display:flex; gap:4px; margin-top:4px;}
+  .shop-level-dots span{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.12);}
+  .shop-level-dots span.on{background:var(--gold-light);}
+  .buy-btn{border:none; border-radius:10px; padding:9px 14px; font-size:12px; font-weight:800; background:var(--gold); color:#221a06; cursor:pointer; flex-shrink:0;}
+  .buy-btn[disabled]{background:rgba(255,255,255,0.08); color:var(--muted); cursor:default;}
+  .buy-btn.owned{background:rgba(63,166,107,0.2); color:#bdf0d2;}
+
+  #bottomnav{display:flex; border-top:1px solid rgba(255,255,255,0.06); background:var(--bg-elev); flex-shrink:0; padding-bottom:env(safe-area-inset-bottom);}
+  #bottomnav button{flex:1; background:none; border:none; color:var(--muted); padding:10px 0 8px; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;}
+  #bottomnav button span.ic{font-size:19px;}
+  #bottomnav button.active{color:var(--gold-light);}
+
+  #onboard{position:fixed; inset:0; background:rgba(5,12,8,0.92); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .onboard-card{background:var(--bg-card); border-radius:18px; padding:26px 22px; max-width:340px; text-align:center; border:1px solid rgba(255,255,255,0.08);}
+  .onboard-card h1{font-size:18px; margin:0 0 6px;}
+  .onboard-card p{font-size:13px; color:var(--muted); margin:0 0 18px;}
+  .onboard-card input{width:100%; padding:13px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:var(--bg-elev); color:var(--white); font-size:15px; text-align:center; margin-bottom:14px;}
+  .onboard-card button{width:100%; padding:13px; border:none; border-radius:10px; background:var(--green); color:var(--white); font-weight:800; font-size:14px; cursor:pointer;}
+
+  .toast{position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:var(--white); padding:10px 18px; border-radius:30px; font-size:13px; z-index:60; opacity:0; transition:opacity .25s; pointer-events:none;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <header id="topbar">
+    <div class="crest" id="crestArea">
+      <div class="crest-badge">⚽</div>
+      <div>
+        <div class="club-name" id="clubNameLabel">המועדון שלי</div>
+        <div class="club-rank" id="clubRankLabel">ליגת נוער</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <div class="coins" id="coinsWrap">
+        <span class="coins-icon">🪙</span>
+        <span class="coins-val en" id="coinsVal">100</span>
+      </div>
+      <button class="settings-btn" id="settingsBtn">⚙️</button>
+    </div>
+  </header>
+
+  <main id="screens">
+
+    <section class="screen active" id="screen-field">
+      <h2 class="section-title">המגרש שלך</h2>
+      <div class="pitch-wrap">
+        <div class="stadium-banner">
+          <div class="division-name" id="fieldDivision">ליגת נוער</div>
+          <div class="division-sub" id="fieldSub">בנה קבוצה כדי לעלות ליגה</div>
+        </div>
+        <svg class="pitch-svg" id="pitchSvg" viewBox="0 0 200 290" xmlns="http://www.w3.org/2000/svg"></svg>
+        <button class="quick-play-btn" data-go="play">⚽ להתחיל סבב מילים</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val" id="statAnswered">0</div>
+          <div class="stat-label">שאלות שנענו</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statAccuracy">0%</div>
+          <div class="stat-label">דיוק</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statPlayers">0/6</div>
+          <div class="stat-label">שחקנים בקבוצה</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-play">
+      <div id="playContainer"></div>
+    </section>
+
+    <section class="screen" id="screen-shop">
+      <h2 class="section-title">שוק העברות</h2>
+      <div class="shop-grid" id="shopGrid"></div>
+    </section>
+
+  </main>
+
+  <nav id="bottomnav">
+    <button class="active" data-screen="field"><span class="ic">🏟️</span><span>מגרש</span></button>
+    <button data-screen="play"><span class="ic">⚽</span><span>משחק</span></button>
+    <button data-screen="shop"><span class="ic">🛒</span><span>חנות</span></button>
+  </nav>
+
+</div>
+
+<div id="onboard">
+  <div class="onboard-card">
+    <h1>⚽ ברוך הבא, מנהל!</h1>
+    <p>איך נקרא למועדון שלך?</p>
+    <input id="clubNameInput" maxlength="20" placeholder="לדוגמה: ברצלונה של איתי">
+    <button id="startClubBtn">התחל לנהל את המועדון</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   DATA: WORD BANK  (48 words = 8 rounds of 6)
+   subjectHe + cat are used to build same-subject distractors
+   for the "what does it mean" stage.
+   ========================================================= */
+const WORDS = [
+  {word:"brave", he:"אמיץ", subjectHe:"אני", cat:"S1",
+    sentence:"I am very ___ when I have to speak in front of the class.", sentenceHe:"אני אמיץ מאוד כשאני רואה כלב גדול.",
+    sentence2:"It was ___ to take the penalty kick first.", sentence2He:"זה היה אמיץ לבעוט בפנדל ראשון."},
+  {word:"exhausted", he:"מותש", subjectHe:"אני", cat:"S1",
+    sentence:"After running so much, I felt ___.", sentenceHe:"אני הרגשתי מותש אחרי שרצתי הרבה.",
+    sentence2:"The players were ___ after the game.", sentence2He:"השחקנים היו מותשים אחרי המשחק."},
+  {word:"disappointed", he:"מאוכזב", heInSentence:"מאוכזבת", subjectHe:"היא", cat:"F",
+    sentence:"She was ___ because her team lost.", sentenceHe:"היא הייתה מאוכזבת כי הקבוצה שלה הפסידה.",
+    sentence2:"He felt ___ after missing the goal.", sentence2He:"הוא הרגיש מאוכזב אחרי שהחמיץ את השער."},
+  {word:"proud", he:"גאה", subjectHe:"אני", cat:"S1",
+    sentence:"I am ___ of my team.", sentenceHe:"אני גאה בקבוצה שלי.",
+    sentence2:"The fans were ___ when their team won.", sentence2He:"האוהדים היו גאים כשהקבוצה שלהם ניצחה."},
+  {word:"nervous", he:"לחוץ", subjectHe:"אני", cat:"S1",
+    sentence:"I feel ___ before every game.", sentenceHe:"אני מרגיש לחוץ לפני כל משחק.",
+    sentence2:"He was ___ before his first match.", sentence2He:"הוא היה לחוץ לפני המשחק הראשון שלו."},
+  {word:"confident", he:"בטוח בעצמו", heInSentence:"בטוחה בעצמה", subjectHe:"היא", cat:"F",
+    sentence:"She felt ___ before the big game.", sentenceHe:"היא הרגישה בטוחה בעצמה לפני המשחק הגדול.",
+    sentence2:"A good player looks ___ on the field.", sentence2He:"שחקן טוב נראה בטוח בעצמו על המגרש."},
+  {word:"frustrated", he:"מתוסכל", subjectHe:"הוא", cat:"M",
+    sentence:"He was ___ because he missed the ball.", sentenceHe:"הוא היה מתוסכל כי החמיץ את הכדור.",
+    sentence2:"The coach was ___ with the team.", sentence2He:"המאמן היה מתוסכל מהקבוצה."},
+  {word:"relieved", he:"מוקל לו", heInSentence:"הקלה", subjectHe:"הוא", cat:"M",
+    sentence:"He felt ___ after the goal was good.", sentenceHe:"הוא הרגיש הקלה אחרי שהשער אושר.",
+    sentence2:"She was ___ when the game ended well.", sentence2He:"היא הרגישה הקלה כשהמשחק נגמר טוב."},
+  {word:"embarrassed", he:"נבוך", subjectHe:"הוא", cat:"M",
+    sentence:"He was ___ when he fell down.", sentenceHe:"הוא היה נבוך כשנפל.",
+    sentence2:"She felt ___ after the mistake.", sentence2He:"היא הרגישה נבוכה אחרי הטעות."},
+  {word:"curious", he:"סקרן", subjectHe:"הילד החדש", cat:"M",
+    sentence:"The new boy was ___ about the rules.", sentenceHe:"הילד החדש היה סקרן לגבי הכללים.",
+    sentence2:"I am ___ about how he trains.", sentence2He:"אני סקרן לגבי איך הוא מתאמן."},
+  {word:"generous", he:"נדיב", subjectHe:"השחקן", cat:"M",
+    sentence:"The player was ___ and gave his shirt to a fan.", sentenceHe:"השחקן היה נדיב ונתן את החולצה שלו לאוהד.",
+    sentence2:"She is very ___ with her friends.", sentence2He:"היא נדיבה מאוד עם החברים שלה."},
+  {word:"jealous", he:"מקנא", subjectHe:"הוא", cat:"M",
+    sentence:"He was ___ of his friend's new shoes.", sentenceHe:"הוא היה מקנא בנעליים החדשות של חברו.",
+    sentence2:"She felt ___ when he got the ball.", sentence2He:"היא הרגישה מקנאת כשהוא קיבל את הכדור."},
+  {word:"ashamed", he:"מתבייש", subjectHe:"הוא", cat:"M",
+    sentence:"He felt ___ after the red card.", sentenceHe:"הוא הרגיש מתבייש אחרי הכרטיס האדום.",
+    sentence2:"The team was ___ after losing big.", sentence2He:"הקבוצה התביישה אחרי הפסד גדול."},
+  {word:"calm", he:"רגוע", subjectHe:"השוער", cat:"M",
+    sentence:"The goalkeeper stayed ___ during the game.", sentenceHe:"השוער נשאר רגוע במהלך המשחק.",
+    sentence2:"She is always ___ before a match.", sentence2He:"היא תמיד רגועה לפני משחק."},
+  {word:"furious", he:"זועם", subjectHe:"המאמן", cat:"M",
+    sentence:"The coach was ___ about the bad call.", sentenceHe:"המאמן היה זועם על ההחלטה הרעה.",
+    sentence2:"The fans were ___ after the loss.", sentence2He:"האוהדים היו זועמים אחרי ההפסד."},
+  {word:"anxious", he:"מודאג", heInSentence:"מודאגת", subjectHe:"היא", cat:"F",
+    sentence:"She felt ___ before the big game.", sentenceHe:"היא הרגישה מודאגת לפני המשחק הגדול.",
+    sentence2:"I am ___ about tomorrow's match.", sentence2He:"אני מודאג לגבי המשחק של מחר."},
+  {word:"grateful", he:"אסיר תודה", heInSentence:"אסירת תודה", subjectHe:"הקבוצה", cat:"F",
+    sentence:"The team was ___ for the fans.", sentenceHe:"הקבוצה הייתה אסירת תודה לאוהדים.",
+    sentence2:"He felt ___ for his coach's help.", sentence2He:"הוא הרגיש אסיר תודה לעזרה של המאמן."},
+  {word:"surprised", he:"מופתע", heInSentence:"מופתעים", subjectHe:"כולם", cat:"P",
+    sentence:"Everyone was ___ by the final score.", sentenceHe:"כולם היו מופתעים מהתוצאה הסופית.",
+    sentence2:"I was ___ when my team won.", sentence2He:"הייתי מופתע כשהקבוצה שלי ניצחה."},
+  {word:"hopeful", he:"מקווה", heInSentence:"מקווים", subjectHe:"אנחנו", cat:"P1",
+    sentence:"We are ___ about next season.", sentenceHe:"אנחנו מקווים לעונה הבאה.",
+    sentence2:"The players felt ___ before the game.", sentence2He:"השחקנים הרגישו מקווים לפני המשחק."},
+  {word:"determined", he:"נחוש", heInSentence:"נחושה", subjectHe:"היא", cat:"F",
+    sentence:"She was ___ to win the game.", sentenceHe:"היא הייתה נחושה לזכות במשחק.",
+    sentence2:"The team looked ___ after halftime.", sentence2He:"הקבוצה נראתה נחושה אחרי המחצית."},
+  {word:"goalkeeper", he:"שוער", subjectHe:"השוער", cat:"M",
+    sentence:"The ___ stopped the ball.", sentenceHe:"השוער עצר את הכדור.",
+    sentence2:"Our ___ is very tall.", sentence2He:"השוער שלנו מאוד גבוה."},
+  {word:"striker", he:"חלוץ", subjectHe:"החלוץ", cat:"M",
+    sentence:"The ___ scored a goal.", sentenceHe:"החלוץ הבקיע שער.",
+    sentence2:"Our ___ is very fast.", sentence2He:"החלוץ שלנו מאוד מהיר."},
+  {word:"defender", he:"מגן", subjectHe:"המגן", cat:"M",
+    sentence:"The ___ stopped the attack.", sentenceHe:"המגן עצר את ההתקפה.",
+    sentence2:"He is a strong ___.", sentence2He:"הוא מגן חזק."},
+  {word:"midfielder", he:"קשר", subjectHe:"הקשר", cat:"M",
+    sentence:"The ___ passed the ball.", sentenceHe:"הקשר העביר את הכדור.",
+    sentence2:"She plays as a ___.", sentence2He:"היא משחקת כקשרית."},
+  {word:"referee", he:"שופט", subjectHe:"השופט", cat:"M",
+    sentence:"The ___ gave a yellow card.", sentenceHe:"השופט נתן כרטיס צהוב.",
+    sentence2:"The ___ stopped the game.", sentence2He:"השופט עצר את המשחק."},
+  {word:"captain", he:"קפטן", subjectHe:"הקפטן", cat:"M",
+    sentence:"The ___ wears the armband during the match.", sentenceHe:"הקפטן מוביל את הקבוצה.",
+    sentence2:"He is our team ___.", sentence2He:"הוא הקפטן של הקבוצה שלנו."},
+  {word:"teammate", he:"חבר לקבוצה", subjectHe:"הוא", cat:"M",
+    sentence:"He passed to his ___.", sentenceHe:"הוא העביר לחבר לקבוצה שלו.",
+    sentence2:"My ___ helped me score.", sentence2He:"החבר לקבוצה שלי עזר לי להבקיע."},
+  {word:"opponent", he:"יריב", subjectHe:"היריב שלנו", cat:"M",
+    sentence:"Our ___ played very well.", sentenceHe:"היריב שלנו שיחק טוב מאוד.",
+    sentence2:"The ___ team was strong.", sentence2He:"קבוצת היריב הייתה חזקה."},
+  {word:"victory", he:"ניצחון", subjectHe:"אנחנו", cat:"P1",
+    sentence:"We celebrated the ___.", sentenceHe:"אנחנו חגגנו את הניצחון.",
+    sentence2:"It was a great ___.", sentence2He:"זה היה ניצחון גדול."},
+  {word:"defeat", he:"הפסד", subjectHe:"זה", cat:"Z",
+    sentence:"It was a hard ___.", sentenceHe:"זה היה הפסד קשה.",
+    sentence2:"The team learned from the ___.", sentence2He:"הקבוצה למדה מההפסד."},
+  {word:"championship", he:"אליפות", subjectHe:"אנחנו", cat:"P1",
+    sentence:"We won the ___!", sentenceHe:"אנחנו ניצחנו באליפות.",
+    sentence2:"The ___ final was exciting.", sentence2He:"גמר האליפות היה מרגש."},
+  {word:"substitute", he:"מחליף", subjectHe:"השחקן המחליף", cat:"M",
+    sentence:"The ___ came in and scored.", sentenceHe:"השחקן המחליף נכנס והבקיע.",
+    sentence2:"He was a great ___.", sentence2He:"הוא היה מחליף מצוין."},
+  {word:"coach", he:"מאמן", subjectHe:"המאמן שלנו", cat:"M",
+    sentence:"Our ___ is very kind.", sentenceHe:"המאמן שלנו מאוד נחמד.",
+    sentence2:"The ___ gave us a new plan.", sentence2He:"המאמן נתן לנו תוכנית חדשה."},
+  {word:"stadium", he:"אצטדיון", subjectHe:"האצטדיון", cat:"M",
+    sentence:"The ___ was full of fans.", sentenceHe:"האצטדיון היה מלא באוהדים.",
+    sentence2:"We play in a big ___.", sentence2He:"אנחנו משחקים באצטדיון גדול."},
+  {word:"uniform", he:"מדים", subjectHe:"הקבוצה שלנו", cat:"F",
+    sentence:"Our team wears a blue ___.", sentenceHe:"הקבוצה שלנו לובשת מדים כחולים.",
+    sentence2:"He got a new ___.", sentence2He:"הוא קיבל מדים חדשים."},
+  {word:"tackle", he:"שיוט", subjectHe:"הוא", cat:"M",
+    sentence:"He made a great ___.", sentenceHe:"הוא עשה שיוט מצוין.",
+    sentence2:"The ___ stopped the attack.", sentence2He:"השיוט עצר את ההתקפה."},
+  {word:"dribble", he:"כדרור", subjectHe:"הוא", cat:"M",
+    sentence:"He used a quick ___.", sentenceHe:"הוא עשה כדרור מהיר.",
+    sentence2:"Her ___ was amazing.", sentence2He:"הכדרור שלה היה מדהים."},
+  {word:"header", he:"נגיחה", subjectHe:"היא", cat:"F",
+    sentence:"She scored with a ___.", sentenceHe:"היא הבקיעה עם נגיחה.",
+    sentence2:"His ___ won the game.", sentence2He:"הנגיחה שלו ניצחה את המשחק."},
+  {word:"whistle", he:"משרוקית", subjectHe:"השופט", cat:"M",
+    sentence:"The referee blew the ___.", sentenceHe:"השופט נשף במשרוקית.",
+    sentence2:"I heard the final ___.", sentence2He:"שמעתי את המשרוקית הסופית."},
+  {word:"crowd", he:"קהל", subjectHe:"הקהל", cat:"M",
+    sentence:"The ___ was very loud.", sentenceHe:"הקהל היה מאוד רועש.",
+    sentence2:"The ___ cheered for us.", sentence2He:"הקהל עודד אותנו."},
+  {word:"effort", he:"מאמץ", subjectHe:"הניצחון", cat:"M",
+    sentence:"Winning took a lot of ___.", sentenceHe:"הניצחון דרש הרבה מאמץ.",
+    sentence2:"He gave his best ___.", sentence2He:"הוא נתן את המאמץ הטוב ביותר שלו."},
+  {word:"achievement", he:"הישג", subjectHe:"הניצחון בגביע", cat:"M",
+    sentence:"Winning the cup was a big ___.", sentenceHe:"הניצחון בגביע היה הישג גדול.",
+    sentence2:"It was a great ___ for the team.", sentence2He:"זה היה הישג גדול לקבוצה."},
+  {word:"challenge", he:"אתגר", subjectHe:"המשחק", cat:"M",
+    sentence:"The game was a big ___.", sentenceHe:"המשחק היה אתגר גדול.",
+    sentence2:"It was a real ___ for us.", sentence2He:"זה היה אתגר אמיתי בשבילנו."},
+  {word:"improve", he:"להשתפר", subjectHe:"הוא", cat:"M",
+    sentence:"He trains hard to ___.", sentenceHe:"הוא מתאמן קשה כדי להשתפר.",
+    sentence2:"She wants to ___ every day.", sentence2He:"היא רוצה להשתפר כל יום."},
+  {word:"compete", he:"להתחרות", heInSentence:"יתחרו", subjectHe:"שתי הקבוצות", cat:"P",
+    sentence:"The two teams will ___.", sentenceHe:"שתי הקבוצות יתחרו.",
+    sentence2:"We love to ___ together.", sentence2He:"אנחנו אוהבים להתחרות יחד."},
+  {word:"talented", he:"מוכשר", subjectHe:"הוא", cat:"M",
+    sentence:"He is a very ___ player.", sentenceHe:"הוא שחקן מוכשר מאוד.",
+    sentence2:"She is the most ___ on the team.", sentence2He:"היא המוכשרת ביותר בקבוצה."},
+  {word:"loyal", he:"נאמן", heInSentence:"נאמנים", subjectHe:"אוהדים אמיתיים", cat:"P",
+    sentence:"True fans stay ___.", sentenceHe:"אוהדים אמיתיים נשארים נאמנים.",
+    sentence2:"He is a ___ player.", sentence2He:"הוא שחקן נאמן."},
+  {word:"energetic", he:"מלא אנרגיה", heInSentence:"מלאי אנרגיה", subjectHe:"השחקנים", cat:"P",
+    sentence:"The players felt ___ today.", sentenceHe:"השחקנים הרגישו מלאי אנרגיה היום.",
+    sentence2:"The fans were very ___.", sentence2He:"האוהדים היו מלאי אנרגיה מאוד."}
+];
+
+/* Generic "silly but grammatically matching" wrong continuations,
+   so every choice in the comprehension stage opens with the same subject. */
+const PRED_M  = ["הלך לישון","אכל פיצה","קנה כדור חדש","ראה סרט","שר שיר","ניקה את החדר","צייר תמונה","קרא ספר"];
+const PRED_F  = ["הלכה לישון","אכלה פיצה","קנתה כדור חדש","ראתה סרט","שרה שיר","ניקתה את החדר","ציירה תמונה","קראה ספר"];
+const PRED_P  = ["הלכו לישון","אכלו פיצה","קנו כדור חדש","ראו סרט","שרו שיר","ניקו את החדר","ציירו תמונה","קראו ספר"];
+const PRED_S1 = ["הלכתי לישון","אכלתי פיצה","קניתי כדור חדש","ראיתי סרט","שרתי שיר","ניקיתי את החדר","ציירתי תמונה","קראתי ספר"];
+const PRED_P1 = ["הלכנו לישון","אכלנו פיצה","קנינו כדור חדש","ראינו סרט","שרנו שיר","ניקינו את החדר","ציירנו תמונה","קראנו ספר"];
+const PRED_Z  = ["קל","מצחיק","ארוך","קצר","משעמם","מוזר"];
+const PRED_BANKS = {M:PRED_M, F:PRED_F, P:PRED_P, S1:PRED_S1, P1:PRED_P1};
+
+function buildComprehensionDistractors(w){
+  if(w.cat === 'Z'){
+    return shuffle(PRED_Z).slice(0,3).map(adj => w.subjectHe + ' היה ' + adj + '.');
+  }
+  const bank = PRED_BANKS[w.cat] || PRED_M;
+  return shuffle(bank).slice(0,3).map(pred => w.subjectHe + ' ' + pred + '.');
+}
+function boldedSentenceHe(w){
+  const target = w.heInSentence || w.he;
+  if(w.sentenceHe.indexOf(target) === -1) return w.sentenceHe;
+  return w.sentenceHe.replace(target, '<b>'+target+'</b>');
+}
+
+/* =========================================================
+   SHOP CONFIG
+   ========================================================= */
+const PLAYER_ITEMS = [
+  {id:"gk",   name:"שוער",        emoji:"🧤", cost:100, label:"שו"},
+  {id:"def1", name:"מגן ראשון",    emoji:"🛡️", cost:80,  label:"מג"},
+  {id:"def2", name:"מגן שני",      emoji:"🛡️", cost:80,  label:"מג"},
+  {id:"mid1", name:"קשר ראשון",    emoji:"🎯", cost:90,  label:"קש"},
+  {id:"mid2", name:"קשר שני",      emoji:"🎯", cost:90,  label:"קש"},
+  {id:"st",   name:"חלוץ",        emoji:"⚡", cost:120, label:"חל"}
+];
+const SINGLE_ITEMS = [
+  {id:"coach", name:"מאמן",        emoji:"📋", cost:150},
+  {id:"kit",   name:"מדי קבוצה",   emoji:"👕", cost:70}
+];
+const STADIUM_COSTS = [150, 250, 400];
+
+const POS_LAYOUT = {
+  gk:   {x:100, y:262},
+  def1: {x:60,  y:204},
+  def2: {x:140, y:204},
+  mid1: {x:60,  y:128},
+  mid2: {x:140, y:128},
+  st:   {x:100, y:58}
+};
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const STORAGE_KEY = "fcem_state_v5";
+let memoryFallback = null;
+
+function freshOrder(){
+  const idxs = [...Array(WORDS.length).keys()];
+  return shuffle(idxs);
+}
+function defaultState(){
+  return {
+    clubName: "",
+    coins: 100,
+    owned: {gk:false, def1:false, def2:false, mid1:false, mid2:false, st:false, coach:false, kit:false},
+    stadiumLevel: 0,
+    stats: {answered:0, correct:0},
+    order: freshOrder(),
+    cursor: 0,
+    roundsCompleted: 0
+  };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return Object.assign(defaultState(), JSON.parse(raw));
+  }catch(e){}
+  if(memoryFallback) return memoryFallback;
+  return defaultState();
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ memoryFallback = state; }
+}
+let state = loadState();
+
+/* =========================================================
+   UTILITIES
+   ========================================================= */
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function sampleDistractors(excludeWord, field, count){
+  const pool = WORDS.filter(w=>w.word!==excludeWord);
+  return shuffle(pool).slice(0,count).map(w=>w[field]);
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function calcCoins(base, penalty, floor, mistakes){
+  return Math.max(floor, base - mistakes*penalty);
+}
+function awardCoins(amount){
+  state.coins += amount;
+  saveState();
+  updateTopbar();
+  const wrap = document.getElementById('coinsWrap');
+  wrap.classList.add('bump');
+  setTimeout(()=>wrap.classList.remove('bump'), 200);
+}
+
+/* =========================================================
+   SPEECH  (force American English voice, fresh pick each call)
+   ========================================================= */
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  const voices = speechSynthesis.getVoices();
+  if(!voices.length) return null;
+  const usVoices = voices.filter(v=>v.lang === 'en-US');
+  if(usVoices.length){
+    const preferredNames = ['Samantha','Alex','Google US English','Microsoft Aria','Microsoft Guy','Allison','Ava','Nicky'];
+    for(const name of preferredNames){
+      const match = usVoices.find(v=>v.name.indexOf(name) !== -1);
+      if(match) return match;
+    }
+    return usVoices[0];
+  }
+  const anyEn = voices.filter(v=>v.lang && v.lang.toLowerCase().startsWith('en'));
+  return anyEn[0] || null;
+}
+if('speechSynthesis' in window){
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = function(){};
+}
+function speak(text, rate){
+  if(!('speechSynthesis' in window)){
+    showToast('הדפדפן הזה לא תומך בהשמעת קול');
+    return;
+  }
+  try{
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = rate || 0.95;
+    const v = pickVoice();
+    if(v) utter.voice = v;
+    speechSynthesis.speak(utter);
+  }catch(e){
+    showToast('לא הצלחתי להשמיע קול כרגע');
+  }
+}
+function speakWithBlankPause(sentenceWithBlank){
+  const parts = sentenceWithBlank.split('___');
+  if(parts.length < 2){ speak(sentenceWithBlank); return; }
+  speak(parts[0].trim());
+  setTimeout(()=>{ speak(parts[1].trim()); }, 900);
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function goScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('#bottomnav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.screen===name);
+  });
+  if(name==='field') renderField();
+  if(name==='shop') renderShop();
+  if(name==='play' && !roundInProgress) renderPlayHome();
+}
+document.querySelectorAll('#bottomnav button').forEach(b=>{
+  b.addEventListener('click', ()=>goScreen(b.dataset.screen));
+});
+document.querySelectorAll('[data-go]').forEach(b=>{
+  b.addEventListener('click', ()=>goScreen(b.dataset.go));
+});
+
+/* =========================================================
+   TOP BAR / FIELD RENDER
+   ========================================================= */
+function rankInfo(){
+  const playerCount = PLAYER_ITEMS.filter(p=>state.owned[p.id]).length;
+  const score = playerCount + state.stadiumLevel;
+  if(score>=8) return {name:"ליגת האלופים", sub:"הקבוצה שלך בשיא הכוח שלה!"};
+  if(score>=5) return {name:"ליגת העל", sub:"עוד כמה שדרוגים לאליפות"};
+  if(score>=2) return {name:"ליגה ראשונה", sub:"הקבוצה מתחילה להיראות טוב"};
+  return {name:"ליגת נוער", sub:"בנה קבוצה כדי לעלות ליגה"};
+}
+function updateTopbar(){
+  document.getElementById('clubNameLabel').textContent = state.clubName || "המועדון שלי";
+  document.getElementById('coinsVal').textContent = state.coins;
+  document.getElementById('clubRankLabel').textContent = rankInfo().name;
+}
+function getCss(varName){
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+function buildPitchSvg(){
+  const r = rankInfo();
+  document.getElementById('fieldDivision').textContent = r.name;
+  document.getElementById('fieldSub').textContent = r.sub;
+
+  let stands = '';
+  if(state.stadiumLevel>=1){
+    stands += `<rect x="0" y="0" width="200" height="8" fill="rgba(255,255,255,0.05)"/>
+               <rect x="0" y="282" width="200" height="8" fill="rgba(255,255,255,0.05)"/>`;
+  }
+  if(state.stadiumLevel>=2){
+    stands += `<circle cx="14" cy="14" r="3" fill="#F0CB6E" opacity="0.7"/>
+               <circle cx="186" cy="14" r="3" fill="#F0CB6E" opacity="0.7"/>
+               <circle cx="14" cy="276" r="3" fill="#F0CB6E" opacity="0.7"/>
+               <circle cx="186" cy="276" r="3" fill="#F0CB6E" opacity="0.7"/>`;
+  }
+  if(state.stadiumLevel>=3){
+    for(let i=0;i<14;i++){
+      stands += `<circle cx="${10+i*14}" cy="3" r="1.4" fill="rgba(255,255,255,0.5)"/>`;
+      stands += `<circle cx="${10+i*14}" cy="287" r="1.4" fill="rgba(255,255,255,0.5)"/>`;
+    }
+  }
+
+  let positions = '';
+  PLAYER_ITEMS.forEach(p=>{
+    const pos = POS_LAYOUT[p.id];
+    const owned = state.owned[p.id];
+    positions += `<g class="${owned?'pos-filled':'pos-empty'}">
+        <circle cx="${pos.x}" cy="${pos.y}" r="17"/>
+        <text x="${pos.x}" y="${pos.y+5}" text-anchor="middle" font-size="12">${p.label}</text>
+      </g>`;
+  });
+
+  const svg = `
+    <rect x="2" y="2" width="196" height="286" rx="10" fill="${getCss('--pitch')}" stroke="${getCss('--line')}" stroke-width="2"/>
+    <rect x="2" y="2" width="196" height="143" fill="${getCss('--pitch-dark')}" opacity="0.25"/>
+    <line x1="2" y1="145" x2="198" y2="145" stroke="${getCss('--line')}" stroke-width="1.5"/>
+    <circle cx="100" cy="145" r="28" fill="none" stroke="${getCss('--line')}" stroke-width="1.5"/>
+    <circle cx="100" cy="145" r="2" fill="${getCss('--line')}"/>
+    <rect x="55" y="2" width="90" height="26" fill="none" stroke="${getCss('--line')}" stroke-width="1.5"/>
+    <rect x="55" y="262" width="90" height="26" fill="none" stroke="${getCss('--line')}" stroke-width="1.5"/>
+    ${stands}
+    ${positions}
+  `;
+  document.getElementById('pitchSvg').innerHTML = svg;
+}
+function renderField(){
+  updateTopbar();
+  buildPitchSvg();
+  const answered = state.stats.answered;
+  const correct = state.stats.correct;
+  const acc = answered ? Math.round((correct/answered)*100) : 0;
+  const playerCount = PLAYER_ITEMS.filter(p=>state.owned[p.id]).length;
+  document.getElementById('statAnswered').textContent = answered;
+  document.getElementById('statAccuracy').textContent = acc + '%';
+  document.getElementById('statPlayers').textContent = playerCount + '/6';
+}
+
+/* =========================================================
+   SHOP
+   ========================================================= */
+function renderShop(){
+  updateTopbar();
+  const grid = document.getElementById('shopGrid');
+  let html = '';
+  html += `<div class="section-title" style="margin-top:4px;">שחקנים</div>`;
+  PLAYER_ITEMS.forEach(p=>{
+    const owned = state.owned[p.id];
+    html += shopRow(p.emoji, p.name, owned ? null : p.cost, owned, p.id);
+  });
+  html += `<div class="section-title" style="margin-top:14px;">צוות וציוד</div>`;
+  SINGLE_ITEMS.forEach(s=>{
+    const owned = state.owned[s.id];
+    html += shopRow(s.emoji, s.name, owned ? null : s.cost, owned, s.id);
+  });
+  html += `<div class="section-title" style="margin-top:14px;">אצטדיון</div>`;
+  const lvl = state.stadiumLevel;
+  const maxed = lvl>=3;
+  const nextCost = maxed ? null : STADIUM_COSTS[lvl];
+  html += `
+    <div class="shop-item">
+      <div class="shop-icon">🏟️</div>
+      <div class="shop-info">
+        <div class="shop-name">שדרוג אצטדיון</div>
+        <div class="shop-level-dots">
+          <span class="${lvl>=1?'on':''}"></span>
+          <span class="${lvl>=2?'on':''}"></span>
+          <span class="${lvl>=3?'on':''}"></span>
+        </div>
+        ${maxed ? '' : `<div class="shop-cost">${nextCost} מטבעות לשלב הבא</div>`}
+      </div>
+      <button class="buy-btn ${maxed?'owned':''}" id="buy-stadium" ${maxed || state.coins<nextCost ? 'disabled':''}>
+        ${maxed ? '✓ מקסימום' : 'שדרג'}
+      </button>
+    </div>`;
+  grid.innerHTML = html;
+
+  PLAYER_ITEMS.forEach(p=>{
+    const btn = document.getElementById('buy-'+p.id);
+    if(btn) btn.addEventListener('click', ()=>buyItem(p.id, p.cost));
+  });
+  SINGLE_ITEMS.forEach(s=>{
+    const btn = document.getElementById('buy-'+s.id);
+    if(btn) btn.addEventListener('click', ()=>buyItem(s.id, s.cost));
+  });
+  const stadiumBtn = document.getElementById('buy-stadium');
+  if(stadiumBtn) stadiumBtn.addEventListener('click', buyStadium);
+}
+function shopRow(emoji, name, cost, owned, id){
+  return `
+    <div class="shop-item">
+      <div class="shop-icon">${emoji}</div>
+      <div class="shop-info">
+        <div class="shop-name">${name}</div>
+        ${owned ? '' : `<div class="shop-cost">${cost} מטבעות</div>`}
+      </div>
+      <button class="buy-btn ${owned?'owned':''}" id="buy-${id}" ${owned || (cost && state.coins<cost) ? 'disabled':''}>
+        ${owned ? '✓ נרכש' : 'קנה'}
+      </button>
+    </div>`;
+}
+function buyItem(id, cost){
+  if(state.owned[id] || state.coins<cost) return;
+  state.coins -= cost;
+  state.owned[id] = true;
+  saveState();
+  showToast('✅ נרכש בהצלחה!');
+  renderShop();
+}
+function buyStadium(){
+  const lvl = state.stadiumLevel;
+  if(lvl>=3) return;
+  const cost = STADIUM_COSTS[lvl];
+  if(state.coins<cost) return;
+  state.coins -= cost;
+  state.stadiumLevel += 1;
+  saveState();
+  showToast('🏟️ האצטדיון שודרג!');
+  renderShop();
+}
+
+/* =========================================================
+   PLAY FLOW  —  4 stages per round (6 new words each round)
+   1: word -> Hebrew meaning (loops to mastery)
+   2: Hebrew meaning -> word, the reverse of stage 1 (loops to mastery)
+   3: full sentence -> Hebrew meaning, 6 questions
+   4: fill-in-the-blank, 6 questions
+   ECONOMY: 1 coin per correct answer (instant), plus a
+   per-stage bonus that shrinks with mistakes:
+     stage 1: 25 base / -4 per mistake / floor 5
+     stage 2: 25 base / -4 per mistake / floor 5
+     stage 3: 20 base / -3 per mistake / floor 5
+     stage 4: 20 base / -3 per mistake / floor 8
+   Perfect round ≈ 24 (answers) + 90 (bonuses) = 114 coins.
+   Full shop ≈ 1580 coins -> roughly 18-22 rounds to build
+   the whole club, around 2.5-3 full passes over 48 words.
+   ========================================================= */
+let roundInProgress = false;
+let roundWords = [];
+
+let stage1Queue = [];
+let stage1Mastered = [];
+let stage1Mistakes = 0;
+
+let stage2Queue = [];
+let stage2Mastered = [];
+let stage2Mistakes = 0;
+
+let stage3Questions = [];
+let stage3Index = 0;
+let stage3Mistakes = 0;
+
+let stage4Questions = [];
+let stage4Index = 0;
+let stage4Mistakes = 0;
+
+let stageCoinsEarned = {s1:0, s2:0, s3:0, s4:0};
+
+const PER_ANSWER_COINS = 1;
+
+function renderPlayHome(){
+  document.getElementById('playContainer').innerHTML = `
+    <div class="start-round-wrap">
+      <div class="ball">⚽</div>
+      <h2 style="margin:0; text-align:center;">סבב חדש: 6 מילים</h2>
+      <p>
+        שלב 1 - מילה באנגלית, בוחרים את הפירוש. מתרגלים עד שמצליחים בכל 6.<br>
+        שלב 2 - פירוש בעברית, בוחרים את המילה באנגלית (הפוך משלב 1). גם כאן עד שמצליחים בכל 6.<br>
+        שלב 3 - 6 משפטים מלאים, בוחרים את הפירוש הנכון.<br>
+        שלב 4 - 6 משפטים להשלמה עם המילים שלמדת.<br><br>
+        כל תשובה נכונה = ${PER_ANSWER_COINS} מטבע. בסוף כל שלב מקבלים גם בונוס שגדל כשיש פחות טעויות.
+      </p>
+      <button class="quick-play-btn" id="beginRoundBtn">התחל סבב</button>
+    </div>`;
+  document.getElementById('beginRoundBtn').addEventListener('click', startRound);
+}
+
+function nextRoundWords(){
+  if(state.cursor + 6 > state.order.length){
+    state.order = freshOrder();
+    state.cursor = 0;
+  }
+  const idxs = state.order.slice(state.cursor, state.cursor+6);
+  state.cursor += 6;
+  saveState();
+  return idxs.map(i=>WORDS[i]);
+}
+
+function startRound(){
+  roundInProgress = true;
+  roundWords = nextRoundWords();
+  stageCoinsEarned = {s1:0,s2:0,s3:0,s4:0};
+
+  stage1Queue = shuffle(roundWords);
+  stage1Mastered = [];
+  stage1Mistakes = 0;
+  renderStage1();
+}
+
+/* ---------- STAGE 1: English word -> Hebrew meaning ---------- */
+function renderStage1(){
+  if(stage1Queue.length === 0){
+    finishStage1();
+    return;
+  }
+  const w = stage1Queue.shift();
+  const wrongs = sampleDistractors(w.word, 'he', 3);
+  const choices = shuffle([w.he, ...wrongs]);
+
+  let dots = '';
+  roundWords.forEach(rw=>{
+    let cls = stage1Mastered.includes(rw) ? 'done' : (rw===w ? 'current' : '');
+    dots += `<span class="${cls}"></span>`;
+  });
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="stage-banner">שלב <b>1</b> מתוך 4 · מילה ← פירוש</div>
+    <div class="progress-dots">${dots}</div>
+    <div class="q-card">
+      <div class="q-type-label">מה הפירוש?</div>
+      <div class="q-prompt en">${w.word}</div>
+      <div class="speak-row"><button class="speak-btn" id="speakBtn">🔊 שמע</button></div>
+      <div class="choices">${choices.map(c=>`<button class="choice-btn" data-choice="${encodeURIComponent(c)}">${c}</button>`).join('')}</div>
+      <div class="feedback-banner" id="feedbackBanner"></div>
+    </div>
+  `;
+  document.getElementById('speakBtn').addEventListener('click', ()=>speak(w.word));
+  document.querySelectorAll('.choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleStage1Answer(btn, decodeURIComponent(btn.dataset.choice), w));
+  });
+}
+function handleStage1Answer(btn, chosen, w){
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled = true);
+  const isCorrect = chosen === w.he;
+  state.stats.answered += 1;
+
+  const banner = document.getElementById('feedbackBanner');
+  if(isCorrect){
+    btn.classList.add('correct');
+    state.stats.correct += 1;
+    stage1Mastered.push(w);
+    awardCoins(PER_ANSWER_COINS);
+    banner.innerHTML = `✅ נכון! +${PER_ANSWER_COINS} מטבע`;
+    banner.classList.add('show','ok');
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(decodeURIComponent(b.dataset.choice) === w.he) b.classList.add('correct');
+    });
+    stage1Mistakes += 1;
+    stage1Queue.push(w);
+    saveState();
+    banner.innerHTML = `❌ לא נכון<div class="feedback-sub">התשובה הנכונה: ${w.he}</div>`;
+    banner.classList.add('show','bad');
+  }
+
+  const contBtn = document.createElement('button');
+  contBtn.className = 'continue-btn';
+  contBtn.textContent = 'המשך ⟶';
+  contBtn.addEventListener('click', renderStage1);
+  document.querySelector('.q-card').appendChild(contBtn);
+}
+function finishStage1(){
+  stageCoinsEarned.s1 = calcCoins(25, 4, 5, stage1Mistakes);
+  awardCoins(stageCoinsEarned.s1);
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="summary-card">
+      <div class="q-type-label">שלב 1 הושלם!</div>
+      <div class="summary-score">✅</div>
+      <div class="summary-coins">למדת את כל 6 המילים</div>
+      <div class="summary-breakdown">
+        <div><span>טעויות בשלב</span><b>${stage1Mistakes}</b></div>
+        <div><span>בונוס שלב</span><b>🪙 ${stageCoinsEarned.s1}</b></div>
+      </div>
+      <div class="summary-actions">
+        <button class="btn-primary" id="toStage2" style="flex:1;">לשלב 2: פירוש ← מילה ⟶</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('toStage2').addEventListener('click', startStage2);
+}
+
+/* ---------- STAGE 2: Hebrew meaning -> English word (reverse of stage 1) ---------- */
+function startStage2(){
+  stage2Queue = shuffle(roundWords);
+  stage2Mastered = [];
+  stage2Mistakes = 0;
+  renderStage2();
+}
+function renderStage2(){
+  if(stage2Queue.length === 0){
+    finishStage2();
+    return;
+  }
+  const w = stage2Queue.shift();
+  const wrongs = sampleDistractors(w.word, 'word', 3);
+  const choices = shuffle([w.word, ...wrongs]);
+
+  let dots = '';
+  roundWords.forEach(rw=>{
+    let cls = stage2Mastered.includes(rw) ? 'done' : (rw===w ? 'current' : '');
+    dots += `<span class="${cls}"></span>`;
+  });
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="stage-banner">שלב <b>2</b> מתוך 4 · פירוש ← מילה</div>
+    <div class="progress-dots">${dots}</div>
+    <div class="q-card">
+      <div class="q-type-label">איזו מילה באנגלית מתאימה?</div>
+      <div class="q-prompt">${w.he}</div>
+      <div class="choices">${choices.map(c=>`<button class="choice-btn en" data-choice="${encodeURIComponent(c)}">${c}</button>`).join('')}</div>
+      <div class="feedback-banner" id="feedbackBanner"></div>
+    </div>
+  `;
+  document.querySelectorAll('.choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleStage2Answer(btn, decodeURIComponent(btn.dataset.choice), w));
+  });
+}
+function handleStage2Answer(btn, chosen, w){
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled = true);
+  const isCorrect = chosen === w.word;
+  state.stats.answered += 1;
+
+  const banner = document.getElementById('feedbackBanner');
+  if(isCorrect){
+    btn.classList.add('correct');
+    state.stats.correct += 1;
+    stage2Mastered.push(w);
+    awardCoins(PER_ANSWER_COINS);
+    banner.innerHTML = `✅ נכון! +${PER_ANSWER_COINS} מטבע`;
+    banner.classList.add('show','ok');
+    setTimeout(()=>speak(w.word), 400);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(decodeURIComponent(b.dataset.choice) === w.word) b.classList.add('correct');
+    });
+    stage2Mistakes += 1;
+    stage2Queue.push(w);
+    saveState();
+    banner.innerHTML = `❌ לא נכון<div class="feedback-sub">התשובה הנכונה: ${w.word}</div>`;
+    banner.classList.add('show','bad');
+  }
+
+  const contBtn = document.createElement('button');
+  contBtn.className = 'continue-btn';
+  contBtn.textContent = 'המשך ⟶';
+  contBtn.addEventListener('click', renderStage2);
+  document.querySelector('.q-card').appendChild(contBtn);
+}
+function finishStage2(){
+  stageCoinsEarned.s2 = calcCoins(25, 4, 5, stage2Mistakes);
+  awardCoins(stageCoinsEarned.s2);
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="summary-card">
+      <div class="q-type-label">שלב 2 הושלם!</div>
+      <div class="summary-score">✅</div>
+      <div class="summary-coins">תרגלת את המילים בכיוון הפוך</div>
+      <div class="summary-breakdown">
+        <div><span>טעויות בשלב</span><b>${stage2Mistakes}</b></div>
+        <div><span>בונוס שלב</span><b>🪙 ${stageCoinsEarned.s2}</b></div>
+      </div>
+      <div class="summary-actions">
+        <button class="btn-primary" id="toStage3" style="flex:1;">לשלב 3: הבנת משפטים ⟶</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('toStage3').addEventListener('click', startStage3);
+}
+
+/* ---------- STAGE 3: full sentence -> Hebrew meaning, 6 Qs ---------- */
+function startStage3(){
+  stage3Questions = shuffle(roundWords);
+  stage3Index = 0;
+  stage3Mistakes = 0;
+  renderStage3();
+}
+function renderStage3(){
+  if(stage3Index >= stage3Questions.length){
+    finishStage3();
+    return;
+  }
+  const w = stage3Questions[stage3Index];
+  const full = w.sentence.replace('___', w.word);
+  const wrongs = buildComprehensionDistractors(w);
+  const choices = shuffle([w.sentenceHe, ...wrongs]);
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="stage-banner">שלב <b>3</b> מתוך 4 · משפט ${stage3Index+1} מתוך ${stage3Questions.length}</div>
+    <div class="q-card">
+      <div class="q-type-label">מה זה אומר?</div>
+      <div class="q-prompt sentence en">${full}</div>
+      <div class="speak-row"><button class="speak-btn" id="speakBtn">🔊 שמע</button></div>
+      <div class="choices">${choices.map(c=>`<button class="choice-btn" data-choice="${encodeURIComponent(c)}">${c}</button>`).join('')}</div>
+      <div class="feedback-banner" id="feedbackBanner"></div>
+    </div>
+  `;
+  document.getElementById('speakBtn').addEventListener('click', ()=>speak(full));
+  document.querySelectorAll('.choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleStage3Answer(btn, decodeURIComponent(btn.dataset.choice), w));
+  });
+}
+function handleStage3Answer(btn, chosen, w){
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled = true);
+  const isCorrect = chosen === w.sentenceHe;
+  state.stats.answered += 1;
+
+  const banner = document.getElementById('feedbackBanner');
+  if(isCorrect){
+    btn.classList.add('correct');
+    state.stats.correct += 1;
+    awardCoins(PER_ANSWER_COINS);
+    banner.innerHTML = `✅ נכון! +${PER_ANSWER_COINS} מטבע`;
+    banner.classList.add('show','ok');
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(decodeURIComponent(b.dataset.choice) === w.sentenceHe) b.classList.add('correct');
+    });
+    stage3Mistakes += 1;
+    saveState();
+    banner.innerHTML = `❌ לא נכון<div class="feedback-sub">התשובה הנכונה: ${w.sentenceHe}</div>`;
+    banner.classList.add('show','bad');
+  }
+
+  const contBtn = document.createElement('button');
+  contBtn.className = 'continue-btn';
+  contBtn.textContent = (stage3Index === stage3Questions.length-1) ? 'לסיכום שלב 3 ⟶' : 'המשך ⟶';
+  contBtn.addEventListener('click', ()=>{ stage3Index += 1; renderStage3(); });
+  document.querySelector('.q-card').appendChild(contBtn);
+}
+function finishStage3(){
+  stageCoinsEarned.s3 = calcCoins(20, 3, 5, stage3Mistakes);
+  awardCoins(stageCoinsEarned.s3);
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="summary-card">
+      <div class="q-type-label">שלב 3 הושלם!</div>
+      <div class="summary-score">✅</div>
+      <div class="summary-coins">תרגלת הבנת משפטים</div>
+      <div class="summary-breakdown">
+        <div><span>טעויות בשלב</span><b>${stage3Mistakes}</b></div>
+        <div><span>בונוס שלב</span><b>🪙 ${stageCoinsEarned.s3}</b></div>
+      </div>
+      <div class="summary-actions">
+        <button class="btn-primary" id="toStage4" style="flex:1;">לשלב 4: השלמת משפטים ⟶</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('toStage4').addEventListener('click', startStage4);
+}
+
+/* ---------- STAGE 4: fill-in-the-blank, 6 Qs ---------- */
+function startStage4(){
+  stage4Questions = shuffle(roundWords).map(w=>({word:w, sentence:w.sentence}));
+  stage4Index = 0;
+  stage4Mistakes = 0;
+  renderStage4();
+}
+function renderStage4(){
+  if(stage4Index >= stage4Questions.length){
+    finishRound();
+    return;
+  }
+  const q = stage4Questions[stage4Index];
+  const display = q.sentence.replace('___', '<span class="blank">___</span>');
+  const choices = shuffle(roundWords.map(w=>w.word));
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="stage-banner">שלב <b>4</b> מתוך 4 · משפט ${stage4Index+1} מתוך ${stage4Questions.length}</div>
+    <div class="q-card">
+      <div class="q-type-label">השלם את המשפט</div>
+      <div class="q-prompt sentence en">${display}</div>
+      <div class="speak-row"><button class="speak-btn" id="speakBtn">🔊 שמע</button></div>
+      <div class="choices">${choices.map(c=>`<button class="choice-btn en" data-choice="${encodeURIComponent(c)}">${c}</button>`).join('')}</div>
+      <div class="feedback-banner" id="feedbackBanner"></div>
+    </div>
+  `;
+  document.getElementById('speakBtn').addEventListener('click', ()=>speakWithBlankPause(q.sentence));
+  document.querySelectorAll('.choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleStage4Answer(btn, decodeURIComponent(btn.dataset.choice), q));
+  });
+}
+function handleStage4Answer(btn, chosen, q){
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled = true);
+  const isCorrect = chosen === q.word.word;
+  state.stats.answered += 1;
+  const translation = `<div class="sentence-translation">${boldedSentenceHe(q.word)}</div>`;
+
+  const banner = document.getElementById('feedbackBanner');
+  if(isCorrect){
+    btn.classList.add('correct');
+    state.stats.correct += 1;
+    awardCoins(PER_ANSWER_COINS);
+    banner.innerHTML = `✅ נכון! +${PER_ANSWER_COINS} מטבע${translation}`;
+    banner.classList.add('show','ok');
+    const fullSentence = q.sentence.replace('___', q.word.word);
+    setTimeout(()=>speak(fullSentence), 400);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(decodeURIComponent(b.dataset.choice) === q.word.word) b.classList.add('correct');
+    });
+    stage4Mistakes += 1;
+    saveState();
+    banner.innerHTML = `❌ לא נכון<div class="feedback-sub">התשובה הנכונה: ${q.word.word}</div>${translation}`;
+    banner.classList.add('show','bad');
+  }
+
+  const contBtn = document.createElement('button');
+  contBtn.className = 'continue-btn';
+  contBtn.textContent = (stage4Index === stage4Questions.length-1) ? 'לסיכום הסבב ⟶' : 'המשך ⟶';
+  contBtn.addEventListener('click', ()=>{ stage4Index += 1; renderStage4(); });
+  document.querySelector('.q-card').appendChild(contBtn);
+}
+
+/* ---------- ROUND SUMMARY ---------- */
+function finishRound(){
+  stageCoinsEarned.s4 = calcCoins(20, 3, 8, stage4Mistakes);
+  awardCoins(stageCoinsEarned.s4);
+  state.roundsCompleted += 1;
+  saveState();
+  roundInProgress = false;
+
+  const stageTotal = stageCoinsEarned.s1 + stageCoinsEarned.s2 + stageCoinsEarned.s3 + stageCoinsEarned.s4;
+  const wordsList = roundWords.map(w=>w.word).join(', ');
+
+  document.getElementById('playContainer').innerHTML = `
+    <div class="summary-card">
+      <div class="q-type-label">הסבב הושלם!</div>
+      <div class="summary-score">🪙 ${stageTotal}</div>
+      <div class="summary-coins" style="font-size:11px; color:var(--muted);">בונוסי שלבים (בנוסף למטבעות שכבר קיבלת על כל תשובה)</div>
+      <div class="summary-coins en" style="font-size:12px; color:var(--muted); margin-top:6px;">${wordsList}</div>
+      <div class="summary-breakdown">
+        <div><span>שלב 1 (מילה←פירוש)</span><b>🪙 ${stageCoinsEarned.s1}</b></div>
+        <div><span>שלב 2 (פירוש←מילה)</span><b>🪙 ${stageCoinsEarned.s2}</b></div>
+        <div><span>שלב 3 (הבנה)</span><b>🪙 ${stageCoinsEarned.s3}</b></div>
+        <div><span>שלב 4 (השלמת משפטים)</span><b>🪙 ${stageCoinsEarned.s4}</b></div>
+      </div>
+      <div class="summary-actions">
+        <button class="btn-secondary" id="toFieldBtn">למגרש</button>
+        <button class="btn-primary" id="againBtn">סבב נוסף</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('toFieldBtn').addEventListener('click', ()=>goScreen('field'));
+  document.getElementById('againBtn').addEventListener('click', startRound);
+}
+
+/* =========================================================
+   ONBOARDING / SETTINGS
+   ========================================================= */
+function showOnboardIfNeeded(){
+  if(state.clubName){
+    document.getElementById('onboard').style.display = 'none';
+    return;
+  }
+  document.getElementById('onboard').style.display = 'flex';
+}
+document.getElementById('startClubBtn').addEventListener('click', ()=>{
+  const val = document.getElementById('clubNameInput').value.trim();
+  state.clubName = val || "המועדון שלי";
+  saveState();
+  document.getElementById('onboard').style.display = 'none';
+  updateTopbar();
+  renderField();
+});
+document.getElementById('settingsBtn').addEventListener('click', ()=>{
+  const choice = prompt("כתוב 'שם' לשינוי שם המועדון, או 'איפוס' לאיפוס ההתקדמות:");
+  if(!choice) return;
+  if(choice.trim()==='שם'){
+    const newName = prompt("שם חדש למועדון:", state.clubName);
+    if(newName && newName.trim()){
+      state.clubName = newName.trim();
+      saveState();
+      updateTopbar();
+    }
+  } else if(choice.trim()==='איפוס'){
+    if(confirm("לאפס את כל ההתקדמות? לא ניתן לבטל פעולה זו.")){
+      state = defaultState();
+      saveState();
+      updateTopbar();
+      renderField();
+      showOnboardIfNeeded();
+    }
+  }
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+showOnboardIfNeeded();
+updateTopbar();
+renderField();
+</script>
+</body>
+</html>
